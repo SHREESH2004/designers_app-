@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>EmptyCup Designers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Roboto', sans-serif; background: #fff; margin: 0; padding: 0; }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem; border-bottom: 1px solid #eee;
+    }
+    header .left { display: flex; align-items: center; gap: 0.5rem; }
+    .brand-logo { width: 32px; }
+    .brand-title { font-size: 1.2rem; font-weight: bold; color: #444; }
+    .menu-icon { width: 24px; }
+
+    .nav-bar {
+      display: flex; justify-content: space-around;
+      border-bottom: 1px solid #eee; padding: 0.5rem 0;
+    }
+    .nav-bar div {
+      text-align: center; font-size: 0.75rem; color: #777;
+    }
+    .nav-bar div.active { color: #d47c2f; font-weight: bold; }
+    .nav-bar img {
+      display: block; margin: 0 auto 4px; width: 20px; filter: grayscale(100%);
+    }
+    .nav-bar .active img { filter: none; }
+
+    .container { padding: 1rem; }
+    .card {
+      background: #fffbe9; border-radius: 6px;
+      padding: 1rem; margin-bottom: 1.5rem;
+      box-shadow: 0 0 0 1px #eee; position: relative;
+    }
+    .card .title { font-weight: bold; font-size: 1.1rem; margin-bottom: 0.3rem; color: #333; }
+    .stars { color: #000; margin-bottom: 0.6rem; }
+    .description { font-size: 0.85rem; color: #444; margin-bottom: 1rem; }
+    .stats {
+      display: flex; justify-content: space-between;
+      margin-bottom: 1rem; text-align: center;
+    }
+    .stats div label {
+      font-weight: bold; font-size: 1.2rem; display: block;
+    }
+    .stats div span { font-size: 0.75rem; color: #555; }
+    .contact { font-size: 0.9rem; line-height: 1.4; color: #111; }
+
+    .actions {
+      position: absolute; top: 1rem; right: 1rem;
+      display: flex; flex-direction: column; align-items: center; gap: 1rem;
+    }
+    .actions div { text-align: center; font-size: 0.7rem; color: #c24f3d; }
+    .actions img { width: 20px; margin-bottom: 0.2rem; }
+
+    form {
+      background: #fff; padding: 1rem; border: 1px solid #ccc;
+      margin: 1rem; border-radius: 6px;
+    }
+    form h3 { margin-top: 0; }
+    form input, form select {
+      display: block; margin: 0.5rem 0; padding: 0.4rem; width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="left">
+      <img src="https://img.icons8.com/color/48/000000/empty-cup.png" class="brand-logo" />
+      <span class="brand-title">EmptyCup</span>
+    </div>
+    <img src="https://img.icons8.com/ios-filled/24/000000/menu.png" class="menu-icon" />
+  </header>
+
+  <!-- Nav Bar -->
+  <div class="nav-bar">
+    <div class="active">
+      <img src="https://img.icons8.com/ios-filled/50/d47c2f/address-book.png" />
+      Contacts
+    </div>
+    <div><img src="https://img.icons8.com/ios-filled/50/000000/image.png" />Gallery</div>
+    <div><img src="https://img.icons8.com/ios-filled/50/000000/marker.png" />Map</div>
+    <div><img src="https://img.icons8.com/ios-filled/50/000000/like.png" />Shortlisted</div>
+    <div><img src="https://img.icons8.com/ios-filled/50/000000/sorting-options.png" />Sort</div>
+  </div>
+
+  <!-- Add Designer Form -->
+  <form id="addDesignerForm">
+    <h3>Add New Designer</h3>
+    <input type="text" name="name" placeholder="Name" required />
+    <input type="text" name="description" placeholder="Description" required />
+    <input type="number" name="rating" placeholder="Rating (1-5)" min="1" max="5" required />
+    <input type="number" name="projects" placeholder="Projects" required />
+    <input type="number" name="years" placeholder="Years" required />
+    <input type="text" name="price" placeholder="Price ($, $$, $$$)" required />
+    <input type="text" name="phone1" placeholder="Phone 1" required />
+    <input type="text" name="phone2" placeholder="Phone 2" required />
+    <button type="submit">Add Designer</button>
+  </form>
+
+  <!-- Designer Cards -->
+  <div class="container" id="designerList"></div>
+
+  <!-- JavaScript -->
+  <script>
+    let designers = [];
+    let shortlisted = new Set();
+
+    async function fetchDesigners() {
+      const res = await fetch('/api/designers');
+      designers = await res.json();
+      render();
+    }
+
+    function toggleShortlist(id) {
+      shortlisted.has(id) ? shortlisted.delete(id) : shortlisted.add(id);
+      render();
+    }
+
+    function render() {
+      const list = document.getElementById('designerList');
+      list.innerHTML = "";
+
+      for (const d of designers) {
+        const isShortlisted = shortlisted.has(d.id);
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="title">${d.name}</div>
+          <div class="stars">${'★'.repeat(d.rating)}${'☆'.repeat(5 - d.rating)}</div>
+          <div class="description">${d.description}</div>
+          <div class="stats">
+            <div><label>${d.projects}</label><span>Projects</span></div>
+            <div><label>${d.years}</label><span>Years</span></div>
+            <div><label>${d.price}</label><span>Price</span></div>
+          </div>
+          <div class="contact">${d.phone1}<br>${d.phone2}</div>
+          <div class="actions">
+            <div><img src="https://img.icons8.com/ios-filled/20/000000/view-details.png"/>Details</div>
+            <div><img src="https://img.icons8.com/ios-filled/20/000000/hide.png"/>Hide</div>
+            <div onclick="toggleShortlist(${d.id})" style="cursor:pointer;">
+              <img src="https://img.icons8.com/ios-filled/20/${isShortlisted ? 'e53935' : '000000'}/bookmark-ribbon.png"/>
+              ${isShortlisted ? 'Shortlisted' : 'Shortlist'}
+            </div>
+            <div><img src="https://img.icons8.com/ios-filled/20/000000/phone.png"/>Call</div>
+            <div><img src="https://img.icons8.com/ios-filled/20/000000/error.png"/>Report</div>
+          </div>
+        `;
+        list.appendChild(card);
+      }
+    }
+
+    document.getElementById('addDesignerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      data.rating = parseInt(data.rating);
+      data.projects = parseInt(data.projects);
+      data.years = parseInt(data.years);
+
+      const res = await fetch('/api/designers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (res.ok) {
+        form.reset();
+        await fetchDesigners();
+      }
+    });
+
+    fetchDesigners();
+  </script>
+</body>
+</html>
